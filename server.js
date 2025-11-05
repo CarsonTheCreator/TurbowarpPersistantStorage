@@ -8,14 +8,6 @@ import http from "http";
 const port = process.env.PORT || 8080;
 const saveFile = "./cloudData.json";
 
-// Simple web server so Koyeb can ping it
-http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end("OK");
-}).listen(port, () => {
-  console.log("HTTP server running on port", port);
-});
-
 // Load saved cloud variables
 let cloudVars = {};
 if (fs.existsSync(saveFile)) {
@@ -33,11 +25,15 @@ function saveData() {
   console.log("💾 Data saved");
 }
 
-// Start WebSocket server
-const wss = new WebSocketServer({ noServer: true });
+// HTTP + WebSocket combined server
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("TurboWarp Cloud Variable Server is running");
+});
 
-// When a client connects
-function handleConnection(ws) {
+const wss = new WebSocketServer({ server });
+
+wss.on("connection", (ws) => {
   console.log("👤 New client connected");
 
   // Send all existing variables
@@ -64,20 +60,13 @@ function handleConnection(ws) {
   });
 
   ws.on("close", () => console.log("❌ Client disconnected"));
-}
-
-// Upgrade HTTP connections to WebSocket
-const server = http.createServer();
-server.on("upgrade", (req, socket, head) => {
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    handleConnection(ws);
-  });
-});
-server.listen(8081, () => {
-  console.log("🔌 WebSocket server running on port 8081");
 });
 
-// Keep-alive log (optional)
+server.listen(port, () => {
+  console.log(`🚀 Server running on port ${port}`);
+});
+
+// Keep alive
 setInterval(() => {
   console.log("💤 Waiting for connections...");
 }, 60000);
