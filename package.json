@@ -1,8 +1,11 @@
 {
-  "name": "turbowarp-persistent-server",
+  "name": "turbowarp-cloud-server",
+  "version": "1.0.0",
+  "description": "Persistent TurboWarp Cloud Variable Server for Koyeb",
   "type": "module",
+  "main": "server.js",
   "dependencies": {
-    "ws": "^8.13.0"
+    "ws": "^8.15.1"
   },
   "scripts": {
     "start": "node server.js"
