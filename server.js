@@ -1,42 +1,37 @@
-// Persistent TurboWarp Cloud Variable Server for Free Hosts (like Koyeb)
-// Saves variables to disk and restores them on restart
+// Persistent TurboWarp Cloud Variable Server for Koyeb Free Tier
+// Uses one port for both HTTP + WebSocket
 
 import WebSocket, { WebSocketServer } from "ws";
-import fs from "fs";
 import http from "http";
+import fs from "fs";
 
 const port = process.env.PORT || 8080;
 const saveFile = "./cloudData.json";
 
-// Load saved cloud variables
+// Load existing data
 let cloudVars = {};
 if (fs.existsSync(saveFile)) {
   try {
     cloudVars = JSON.parse(fs.readFileSync(saveFile, "utf8"));
-    console.log("✅ Loaded saved cloud data");
-  } catch (err) {
-    console.error("⚠️ Error loading saved data:", err);
+    console.log("✅ Loaded saved data");
+  } catch {
+    console.log("⚠️ Error reading save file, starting fresh");
   }
 }
 
-// Function to save variables to file
-function saveData() {
-  fs.writeFileSync(saveFile, JSON.stringify(cloudVars, null, 2));
-  console.log("💾 Data saved");
-}
-
-// HTTP + WebSocket combined server
+// HTTP server (for Koyeb health checks)
 const server = http.createServer((req, res) => {
-  res.writeHead(200);
-  res.end("TurboWarp Cloud Variable Server is running");
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("TurboWarp Cloud Server Active");
 });
 
+// Attach WebSocket to same server
 const wss = new WebSocketServer({ server });
 
 wss.on("connection", (ws) => {
-  console.log("👤 New client connected");
+  console.log("👤 New connection");
 
-  // Send all existing variables
+  // Send stored variables
   for (const [name, value] of Object.entries(cloudVars)) {
     ws.send(`set ${name} ${value}`);
   }
@@ -48,9 +43,9 @@ wss.on("connection", (ws) => {
 
     if (cmd === "set") {
       cloudVars[name] = value;
-      saveData();
+      fs.writeFileSync(saveFile, JSON.stringify(cloudVars, null, 2));
 
-      // Broadcast to all clients
+      // Broadcast
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(`set ${name} ${value}`);
@@ -62,11 +57,7 @@ wss.on("connection", (ws) => {
   ws.on("close", () => console.log("❌ Client disconnected"));
 });
 
-server.listen(port, () => {
-  console.log(`🚀 Server running on port ${port}`);
-});
+server.listen(port, () => console.log(`🚀 Server running on ${port}`));
 
 // Keep alive
-setInterval(() => {
-  console.log("💤 Waiting for connections...");
-}, 60000);
+setInterval(() => console.log("💤 Idle, waiting for connections..."), 60000);
