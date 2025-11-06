@@ -1,13 +1,17 @@
-{
-  "name": "turbowarp-cloud-server",
+ "name": "turbowarp-cloud-server",
   "version": "1.0.0",
-  "description": "Persistent TurboWarp Cloud Variable Server for Koyeb",
-  "type": "module",
+  "description": "TurboWarp Cloud Server with self-ping to prevent Koyeb sleeping",
   "main": "server.js",
-  "dependencies": {
-    "ws": "^8.15.1"
-  },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "keepalive": "node keepalive.js"
+  },
+  "dependencies": {
+    "ws": "^8.13.0",
+    "express": "^4.18.2",
+    "node-fetch": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
