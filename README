@@ -1,0 +1,14 @@
+# TurboWarp Cloud Server
+
+A persistent TurboWarp cloud variable server for Koyeb.
+
+## Features
+- Stores variables in `data.json` for persistence
+- WebSocket support for TurboWarp
+- Self-pings every 3 minutes to prevent Koyeb from sleeping
+
+## Setup
+1. Deploy this repo to Koyeb
+2. Set the environment variable `SERVER_URL` to your app's URL
+3. Start the server with `npm start`
+4. Start self-pinging with `npm run ping`
